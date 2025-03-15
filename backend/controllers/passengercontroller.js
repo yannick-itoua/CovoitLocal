@@ -52,25 +52,20 @@ const createPassenger = async (req, res) => {
 const loginPassenger = async (req, res) => {
     const { email, password } = req.body;
     try {
-        const existingPassenger = await Passenger.findOne({
-            email,
-        });
-        if (!existingPassenger) {
-            return res.status(404).json({ message: 'Passenger does not exist' });
+        const passenger = await Passenger.findOne({ email });
+        if (!passenger) {
+            return res.status(400).json({ message: 'Invalid email or password' });
         }
-        const isPasswordCorrect = await bcrypt.compare(password, existingPassenger.password);
-        if (!isPasswordCorrect) {
-            return res.status(400).json({ message: 'Invalid password' });
-        }   
-        const token = jwt.sign({ id: existingPassenger._id }, JWT_SECRET, {
-            expiresIn: '1h',
-        });
-        res.status(200).json({ passenger: existingPassenger, token });
+        const isMatch = await bcrypt.compare(password, passenger.password);
+        if (!isMatch) {
+            return res.status(400).json({ message: 'Invalid email or password' });
+        }
+        const token = jwt.sign({ id: passenger._id }, JWT_SECRET, { expiresIn: '1h' });
+        res.status(200).json({ token });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
     }
-    catch (error) {
-        res.status(400).json({ message: error.message });
-    }
-}
+};
 
 const updatePassenger = async (req, res) => {
     try {
