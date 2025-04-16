@@ -25,11 +25,9 @@ const getDrivers = async (req, res) => {
 };
 
 const createDriver = async (req, res) => {
-    const { name, email, phone, password, car, seats,trips } = req.body;
+    const { name, email, phone, password, car, seats } = req.body;
     try {
-        const existingDriver = await Driver.findOne({
-            email,
-        }); // Check if driver already exists
+        const existingDriver = await Driver.findOne({ email });
         if (existingDriver) {
             return res.status(400).json({ message: 'Driver already exists' });
         }
@@ -41,40 +39,44 @@ const createDriver = async (req, res) => {
             password: hashedPassword,
             car,
             seats,
-            trips
         });
-        const token = jwt.sign({ id: driver._id }, config.JWT_SECRET, {
-            expiresIn: '1h',
-        });
+        const token = jwt.sign({ id: driver._id }, config.JWT_SECRET, { expiresIn: '1h' });
         res.status(201).json({ driver, token });
-    }
-    catch (error) {
+    } catch (error) {
         res.status(400).json(error);
     }
-}
+};
 
 const loginDriver = async (req, res) => {
     const { email, password } = req.body;
     try {
-        const existingDriver = await Driver.findOne({
-            email,
-        });
-        if (!existingDriver) {
+        const driver = await Driver.findOne({ email });
+        if (!driver) {
             return res.status(404).json({ message: 'Driver does not exist' });
         }
-        const isPasswordCorrect = await bcrypt.compare(password, existingDriver.password);
+        const isPasswordCorrect = await bcrypt.compare(password, driver.password);
         if (!isPasswordCorrect) {
             return res.status(400).json({ message: 'Invalid password' });
-        }   
-        const token = jwt.sign({ id: existingDriver._id }, config.JWT_SECRET, {
-            expiresIn: '1h',
+        }
+        const token = jwt.sign({ id: driver._id }, config.JWT_SECRET, { expiresIn: '1h' });
+
+        // Include the user object in the response
+        res.status(200).json({
+            token,
+            user: {
+                _id: driver._id,
+                name: driver.name,
+                email: driver.email,
+                phone: driver.phone,
+                car: driver.car,
+                seats: driver.seats,
+                role: 'driver',
+            },
         });
-        res.status(200).json({ driver: existingDriver, token });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
     }
-    catch (error) {
-        res.status(400).json(error);
-    }
-}
+};
 
 const updateDriver = async (req, res) => {
     try {

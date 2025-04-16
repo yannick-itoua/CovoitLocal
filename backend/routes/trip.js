@@ -8,5 +8,7 @@ router.post('/', tripController.createTrip);
 router.put('/:id', tripController.updateTrip);
 router.delete('/:id', tripController.deleteTrip);
 router.get('/:id', tripController.getTrip);
+router.post('/book', tripController.bookTrip);
+router.post('/cancel', tripController.cancelTrip);
 
 module.exports = router;

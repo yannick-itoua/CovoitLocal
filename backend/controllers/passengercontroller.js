@@ -61,12 +61,22 @@ const loginPassenger = async (req, res) => {
             return res.status(400).json({ message: 'Invalid email or password' });
         }
         const token = jwt.sign({ id: passenger._id }, JWT_SECRET, { expiresIn: '1h' });
-        res.status(200).json({ token });
+
+        // Include the user object in the response
+        res.status(200).json({
+            token,
+            user: {
+                _id: passenger._id,
+                name: passenger.name,
+                email: passenger.email,
+                phone: passenger.phone,
+                role: 'passenger',
+            },
+        });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
 };
-
 const updatePassenger = async (req, res) => {
     try {
         const { name, email, phone, password } = req.body;

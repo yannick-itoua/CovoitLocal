@@ -24,6 +24,16 @@ export const updateTrip = async (id, trip) => {
     return response.data;
     };
 
+ export const bookTrip = async (tripId, passengerId) => {
+        const response = await api.post('/trips/book', { tripId, passengerId });
+        return response.data;
+    };
+
+    export const cancelTrip = async (tripId, passengerId) => {
+        const response = await api.post('/trips/cancel', { tripId, passengerId });
+        return response.data;
+    };
+    
 export const deleteTrip = async (id) => {
     const response = await api.delete(`/trips/${id}`);
     return response.data;
